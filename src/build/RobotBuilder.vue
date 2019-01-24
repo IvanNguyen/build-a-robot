@@ -1,5 +1,6 @@
 <template>
-  <div class="content">
+    <!-- check availableParts ready to generate -->
+  <div v-if="availableParts" class="content"> 
       <div class="preview">
         <CollapsibleSection>
         <div class="preview-content">
@@ -66,40 +67,39 @@
         ></PartSelector>
       </div>
     </div>
-    <div>
-      <h1>Cart</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Robot</th>
-            <th class="cost">Cost</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(robot,index) in cart" :key="index">
-            <td>{{robot.head.title}}</td>
-            <td class="cost">{{robot.cost}}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   </div>
 </template>
 
 <script>
-import availableParts from "../data/parts";
+// import availableParts from "../data/parts";   fetch data from API
 import createdHookMixin from "./created-hook-mixin";
 import PartSelector from "./PartSelector.vue";
 import CollapsibleSection from "../shared/CollapsibleSection.vue";
-
+// Using mapAction
+import { mapActions } from 'vuex';
 export default {
   name: "RobotBuilder",
+  created() {
+    this.getParts();
+  },
+  beforeRouteLeave(to, from, next){
+    if(this.addedToCart){
+      next(true);
+    } else {
+      // eslint no-alert: 0
+      // eslint no-restricted-globals: 0
+      const respone = confirm ('You have not added your robot to your cart, are you sure you wanna leave ?');
+      next(respone);
+    }
+  },
   // mixins: [createdHookMixin],
   components: { PartSelector, CollapsibleSection },
+  
   data() {
     return {
-      availableParts, 
-      cart: [],
+      addedToCart : false,
+      // availableParts,  fetch data from API, so dont use this anymore
+      // cart: [], moved to store
       selectedRobot: {
         head: {},
         leftArm: {},
@@ -110,6 +110,10 @@ export default {
     };
   },
   computed: {
+    // fetch data from API
+    availableParts() {
+      return this.$store.state.robots.parts;
+    },
     headBorderStyle() {
       return {
         border: this.selectedRobot.head.onSale
@@ -118,11 +122,14 @@ export default {
       };
     },
     saleBorderClass() {
-      return;
+      return 
       selectedRobothead.onSale ? "sale-border" : "";
     }
   },
   methods: {
+    // Using mapAction
+    ...mapActions('robots', ['getParts', 'addRobotToCart']),
+    // ...mapMutations('robots',['SomeMutations']),
     addToCart() {
       const robot = this.selectedRobot;
       const cost =
@@ -131,7 +138,10 @@ export default {
         robot.torso.cost +
         robot.rightArm.cost +
         robot.base.cost;
-      this.cart.push(Object.assign({}, robot, { cost }));
+      // this.$store.commit('addRobotToCart', Object.assign({}, robot, { cost }));  mutation, update local-data
+      // this.$store.dispatch('robots/addRobotToCart', Object.assign({}, robot, { cost })); // action, update api-data
+      this.addRobotToCart(Object.assign({}, robot, { cost }));
+      this.addedToCart = true;
     }
   }
 };
@@ -242,12 +252,6 @@ export default {
   width: 210px;
   padding: 3px;
   font-size: 16px;
-}
-td,
-th {
-  text-align: left;
-  padding: 5px;
-  padding-right: 20px;
 }
 .cost {
   text-align: right;

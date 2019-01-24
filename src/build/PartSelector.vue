@@ -31,6 +31,7 @@ export default {
     return { selectedPartIndex: 0 };
   },
   // props : ['parts','position'],
+  //props validation
   props : {
     parts: {
       type: Array,
