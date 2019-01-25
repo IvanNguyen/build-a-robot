@@ -10,11 +10,18 @@
     </router-link>
     <button @click="selectPreviousPart()" class="prev-selector"></button>
     <button @click="selectNextPart()" class="next-selector"></button>
-    <span class="sale" v-show="selectedPart.onSale">Sale!</span>
+    <!-- <span class="sale" v-show="selectedPart.onSale">Sale!</span> -->
+    <!-- using cumstom directive -->
+    <!-- <span class="sale" v-pin:position.top.right v-show="selectedPart.onSale">Sale!</span> -->
+    <!-- <span class="sale" v-pin="{ bottom: '10px', right: '10px'}" v-show="selectedPart.onSale">Sale!</span> -->
+    <span @click="pinPadding='30px'" class="sale" v-pin="{ bottom: pinPadding, right: pinPadding}" v-show="selectedPart.onSale">Sale!</span>
   </div>
 </template>
 
 <script>
+// import custom directive
+// import pinDirective from '../shared/pin-directive'
+// make custom directive global in main.js
 
 const validIndexNext = (index,length) =>{
   index+=1;
@@ -27,8 +34,13 @@ function validIndexPrev(index,length){
 }
 
 export default {
+  // declare the custom directive
+  // directives: { pin: pinDirective},
+  // diclare the custom directive global at main.js 
   data() {
-    return { selectedPartIndex: 0 };
+    return { selectedPartIndex: 0,
+             pinPadding: '10px'
+    };
   },
   // props : ['parts','position'],
   //props validation
@@ -95,9 +107,10 @@ export default {
   border: 3px solid #aaa;
 }
 .sale {
-  position: absolute;
+  /* custom directive */
+  /* position: absolute;
   bottom: 5px;
-  right: 5px;
+  right: 5px; */
   color: white;
   background-color: red;
   padding: 3px;
